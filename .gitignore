@@ -16,6 +16,8 @@
 /UserSettings/*
 /obj/*
 
+/projects/**/Assets/StreamingAssets/*
+/projects/**/Assets/StreamingAssets.meta
 /projects/**/Assets/GaussianAssets/*
 /projects/**/Assets/GaussianAssets.meta
 /projects/**/Assets/Models~/*
