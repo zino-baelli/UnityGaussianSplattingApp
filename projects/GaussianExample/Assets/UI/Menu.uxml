@@ -1,8 +1,12 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <ui:VisualElement style="flex-grow: 1;">
         <ui:Button text="select Input Folder/Video" name="InputSelection" emoji-fallback-support="false"/>
-        <ui:Label text="Label" name="PipelineStage"/>
-        <ui:Button text="Start Training" name="StartButton"/>
         <ui:Label text="Label" name="InputLabel"/>
+        <ui:Button text="select output folder" name="OutputSelection"/>
+        <ui:Label text="Label" name="OutputLabel"/>
+        <ui:Button text="Start Training" name="StartButton"/>
+        <ui:Label text="Label" name="PipelineStage" style="white-space: normal;"/>
+        <ui:ProgressBar value="22" title="my-progress" name="StageProgressBar"/>
+        <ui:Button text="Cancel Training" name="CancelButton"/>
     </ui:VisualElement>
 </ui:UXML>

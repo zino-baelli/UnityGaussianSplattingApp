@@ -134,6 +134,23 @@ namespace SplattingPipeline
             if (exitCode != 0)
                 throw new Exception($"COLMAP reconstruction failed (exit code {exitCode}). " +
                                      "Common causes: too few overlapping images, or all frames too blurry to match.");
+            
+            CopyImages(workDir, imagesDir);
+        }
+
+        private void CopyImages(string workDir, string imagesDir)
+        {
+            string imagesFolder = Path.Combine(workDir, "images");
+            Directory.CreateDirectory(imagesFolder);
+            
+            string[] images = Directory.GetFiles(imagesDir);
+            foreach (var sourcePath in images)
+            {
+                string fileName = Path.GetFileName(sourcePath);
+                string destFilePath = Path.Combine(imagesFolder, fileName);
+                File.Copy(sourcePath, destFilePath);
+            }
+            
         }
 
         private static readonly Regex ColmapProgressRegex = new Regex(@"Registered image #\d+ \((\d+) / (\d+)\)");
@@ -151,18 +168,50 @@ namespace SplattingPipeline
         }
 
         private static readonly Regex BrushProgressRegex = new Regex(@"step[:\s]+(\d+)\s*/\s*(\d+)", RegexOptions.IgnoreCase);
-
+        //
+        // private async Task<string> RunBrushAsync(string workDir, CancellationToken token)
+        // {
+        //     string sparseDir = Path.Combine(workDir, "sparse", "0");
+        //     string outputDir = Path.Combine(workDir, "splat_output");
+        //     Directory.CreateDirectory(outputDir);
+        //
+        //     var runner = new ProcessRunner();
+        //     runner.OnOutputLine += line => HandleBrushLine(line);
+        //     runner.OnErrorLine += line => HandleBrushLine(line);
+        //
+        //     string args = $"train \"{sparseDir}\" --export-path \"{outputDir}\"";
+        //     int exitCode = await runner.RunAsync(_brushExePath, args, workDir, token);
+        //
+        //     if (exitCode != 0)
+        //         throw new Exception($"Brush training failed (exit code {exitCode}).");
+        //
+        //     string plyPath = Path.Combine(outputDir, "export.ply");
+        //     if (!File.Exists(plyPath))
+        //         throw new Exception("Brush finished but no export.ply was found — check its CLI output for the actual filename.");
+        //
+        //     return plyPath;
+        // }
         private async Task<string> RunBrushAsync(string workDir, CancellationToken token)
         {
             string sparseDir = Path.Combine(workDir, "sparse", "0");
+            string imagesDir = Path.Combine(workDir, "images");
             string outputDir = Path.Combine(workDir, "splat_output");
             Directory.CreateDirectory(outputDir);
+
+            if (!Directory.Exists(imagesDir) || Directory.GetFiles(imagesDir).Length == 0)
+                throw new Exception($"Images folder missing or empty at \"{imagesDir}\" — Brush needs the source images alongside the sparse reconstruction.");
+
+            if (!Directory.Exists(sparseDir))
+                throw new Exception($"Sparse reconstruction folder not found at \"{sparseDir}\".");
 
             var runner = new ProcessRunner();
             runner.OnOutputLine += line => HandleBrushLine(line);
             runner.OnErrorLine += line => HandleBrushLine(line);
 
-            string args = $"train \"{sparseDir}\" --export-path \"{outputDir}\"";
+            // Brush expects the dataset root (containing both "images/" and "sparse/0/"),
+            // not the sparse folder alone.
+            // string args = $"train \"{workDir}\" --export-path \"{outputDir}\"";
+            string args = $"\"{workDir}\" --export-path \"{outputDir}\" --total-steps 1000 --max-resolution 512";
             int exitCode = await runner.RunAsync(_brushExePath, args, workDir, token);
 
             if (exitCode != 0)
