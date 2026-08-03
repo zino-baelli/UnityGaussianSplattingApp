@@ -1,8 +1,12 @@
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using GaussianSplatting.Runtime;
 using SFB;
 using SplattingPipeline;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 using Application = UnityEngine.Application;
 using Button = UnityEngine.UIElements.Button;
@@ -11,6 +15,7 @@ using Button = UnityEngine.UIElements.Button;
 public class UIController : MonoBehaviour
 {
     [SerializeField] private UIDocument uiDoc;
+    [SerializeField] private GaussianSplatRenderer splatRendererPrefab;
     private VisualElement root;
     private bool isInputSelected = false;
     private bool isProcessRunning = false;
@@ -35,11 +40,25 @@ public class UIController : MonoBehaviour
     private Button _startButton;
     private Button _cancelButton;
     private Button _selectButton;
+    private Button _importButton;
     private Button _selectOutputButton;
+    private Foldout _settingsFoldout;
+    private DropdownField _resolutionDropdown;
+    private SliderInt _iterationsSlider;
+    private SliderInt _framerateSlider;
     private ProgressBar _progressBar;
+    private Color _baseTextColor = Color.white;
+
+    private PipelineSettings _pipelineSettings;
+    [SerializeField]
+    private Camera _cam;
 
     void Awake()
     {
+        _pipelineSettings = new PipelineSettings();
+        _cam.clearFlags = CameraClearFlags.SolidColor;
+        _cam.backgroundColor = Color.gray2;
+        
         root = uiDoc.GetComponent<UIDocument>().rootVisualElement;
         _selectButton = root.Q<Button>("InputSelection");
         _selectButton.clickable.clicked += InputSelectionButtonClicked;
@@ -47,14 +66,42 @@ public class UIController : MonoBehaviour
         _selectOutputButton.clicked += SelectOutputButtonClicked;
         _startButton = root.Q<Button>("StartButton");
         _startButton.clicked += StartButtonClicked;
+        _importButton =  root.Q<Button>("ImportButton");
+        _importButton.clicked += ImportButtonClicked;
+        _cancelButton = root.Q<Button>("CancelButton");
+        _cancelButton.clicked += CancelButtonClicked;
+        _cancelButton.style.display =  DisplayStyle.None;
         
         _inputLabel =  root.Q<Label>("InputLabel");
         _outputLabel = root.Q<Label>("OutputLabel");
         _pipelineStage = root.Q<Label>("PipelineStage");
+        _pipelineStage.style.display = DisplayStyle.None;
+        
+        _settingsFoldout = root.Q<Foldout>("SettingsFoldout");
+        var choices = new List<string> {"512", "1024"};
+        _resolutionDropdown =  root.Q<DropdownField>("ResolutionDropdown");
+        _resolutionDropdown.choices = choices;
+        _resolutionDropdown.value = choices[0];
+        _resolutionDropdown.RegisterCallback<ChangeEvent<string>>((evt) =>
+        {
+            _pipelineSettings.MaxResolution = int.Parse(evt.newValue);
+        });
+        
+        _iterationsSlider = root.Q<SliderInt>("IterationSlider");
+        _iterationsSlider.RegisterCallback<ChangeEvent<int>>((evt) =>
+        {
+            _pipelineSettings.NumIterations = evt.newValue;
+        });
+        _framerateSlider = root.Q<SliderInt>("FramerateSlider");
+        _framerateSlider.RegisterCallback<ChangeEvent<int>>((evt) =>
+        {
+            _pipelineSettings.ExtractionFramerate = evt.newValue;
+        });
         
         _progressBar = root.Q<ProgressBar>("StageProgressBar");
         _progressBar.lowValue = 0f;
         _progressBar.highValue = 1f;
+        _progressBar.style.display = DisplayStyle.None;
         
         string colmapPath = Path.Combine(Application.streamingAssetsPath, colmapRelativePath);
         string ffmpegPath = Path.Combine(Application.streamingAssetsPath, ffmpegRelativePath);
@@ -104,7 +151,7 @@ public class UIController : MonoBehaviour
         string[] paths = StandaloneFileBrowser.OpenFilePanel("Select Images or Video", "", extensions, true);
         if (Validate( out var error, paths))
         {
-            _inputLabel.style.color = Color.black;
+            _inputLabel.style.color = _baseTextColor;
             _inputLabel.text = paths[0];
             if (_selectedInputType == InputType.Images)
             {
@@ -127,12 +174,23 @@ public class UIController : MonoBehaviour
 
     }
 
+    private void ImportButtonClicked()
+    {
+        var extensions = new[] {
+            new ExtensionFilter("Splat Files", "ply"),
+        };
+        string[] importFile = StandaloneFileBrowser.OpenFilePanel("Select Splat to Import", "", extensions, false);
+        if (importFile.Length > 0)
+            HandleFinished(importFile[0]);
+    }
+
     private void SelectOutputButtonClicked()
     {
         string[] outputDirectory = StandaloneFileBrowser.OpenFolderPanel("Select Output Directory", "",false);
         _selectedOutputPath = outputDirectory[0];
         _outputLabel.text = _selectedOutputPath;
     }
+    
     
    
 
@@ -184,24 +242,113 @@ public class UIController : MonoBehaviour
             return;
         }
         
-        // if (!isInputSelected)
-        // {
-        //     //todo add no input message
-        //     return;
-        // }
-        // if (!isProcessRunning) return;
+    
+        if (!isProcessRunning)
+        {
+            isProcessRunning = true;
+        }
+        else
+        {
+            return;
+        }
+
+        _selectButton.style.display = DisplayStyle.None;
+        _selectOutputButton.style.display = DisplayStyle.None;
+        _settingsFoldout.style.display = DisplayStyle.None;
+        _startButton.style.display = DisplayStyle.None;
+        _importButton.style.display = DisplayStyle.None;
+        _inputLabel.style.display = DisplayStyle.None;
+        _outputLabel.style.display = DisplayStyle.None;
+
+        _cancelButton.style.display = DisplayStyle.Flex;
+        _pipelineStage.style.display = DisplayStyle.Flex;
+        _progressBar.style.display = DisplayStyle.Flex;
+        
         // string workDir = Path.Combine(Application.persistentDataPath, "jobs", System.Guid.NewGuid().ToString());
         string workDir = Path.Combine(_selectedOutputPath, "jobs", System.Guid.NewGuid().ToString());
         // _pipelineStage.text = workDir;
-        await _pipeline.RunAsync(_selectedInputPath, workDir);
+        await _pipeline.RunAsync(_selectedInputPath, workDir, _selectedInputType, _pipelineSettings);
         // await _pipeline.RunAsync(_selectedInputPath,_selectedOutputPath);
     }
+
+    private void CancelButtonClicked()
+    {
+        if (!isProcessRunning) return;
+        _pipeline.Cancel();
+        isProcessRunning = false;
+        _selectButton.style.display = DisplayStyle.Flex;
+        _selectOutputButton.style.display = DisplayStyle.Flex;
+        _settingsFoldout.style.display = DisplayStyle.Flex;
+        _startButton.style.display = DisplayStyle.Flex;
+        _importButton.style.display = DisplayStyle.Flex;
+        _inputLabel.style.display = DisplayStyle.Flex;
+        _outputLabel.style.display = DisplayStyle.Flex;
+
+        _cancelButton.style.display = DisplayStyle.None;
+        _progressBar.style.display = DisplayStyle.None;
+
+
+    }
     
+    
+    // private void HandleFinished(string splatPath)
+    // {
+    //     _pipelineStage.text = $"Splat ready: {splatPath}";
+    //     // TODO: hand splatPath off to your UnityGaussianSplatting viewer here,
+    //     // e.g. GaussianSplatAssetImporter.Import(splatPath) or similar.
+    // }
     private void HandleFinished(string splatPath)
     {
         _pipelineStage.text = $"Splat ready: {splatPath}";
-        // TODO: hand splatPath off to your UnityGaussianSplatting viewer here,
-        // e.g. GaussianSplatAssetImporter.Import(splatPath) or similar.
+
+        GaussianSplatAsset asset;
+        try
+        {
+            asset = GaussianSplatRuntimeImporter.Import(
+                splatPath,
+                GaussianSplatRuntimeImporter.DataQuality.Medium,
+                importCameras: true,
+                onProgress: (stage, pct) => _pipelineStage.text = $"{stage} ({pct:P0})");
+        }
+        catch (Exception ex)
+        {
+            _pipelineStage.text = $"Import failed: {ex.Message}";
+            Debug.LogException(ex);
+            return;
+        }
+
+        SplatHandoff.PendingAsset = asset;
+        SplatHandoff.FilePath = splatPath;
+        SceneManager.LoadSceneAsync("Gaussian Renderer", LoadSceneMode.Single).completed += OnViewerSceneLoaded;
+    }
+
+ 
+    private void OnViewerSceneLoaded(AsyncOperation op)
+    {
+        var asset = SplatHandoff.PendingAsset;
+
+        if (asset == null)
+        {
+            Debug.LogError("No splat asset was handed off to the viewer scene.");
+            return;
+        }
+
+        if (splatRendererPrefab == null)
+        {
+            Debug.LogError("Splat renderer prefab is not assigned.");
+            return;
+        }
+
+        var renderer = Instantiate(splatRendererPrefab);
+        renderer.gameObject.name = $"Splat_{asset.name}";
+        renderer.m_Asset = asset;
+    }
+    
+    // SplatHandoff.cs — carries the imported asset across the scene load
+    public static class SplatHandoff
+    {
+        public static GaussianSplatAsset PendingAsset;
+        public static string FilePath;
     }
     
     private void HandleFailed(string error)
@@ -231,7 +378,7 @@ public class UIController : MonoBehaviour
     }
 }
 
-internal enum InputType
+public enum InputType
 {
     Video,
     Images

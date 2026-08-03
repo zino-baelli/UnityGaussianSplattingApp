@@ -246,9 +246,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIController
   uiDoc: {fileID: 1754085816}
-  colmapRelativePath: tools/colmap/COLMAP.bat
-  ffmpegRelativePath: tools/ffmpeg/ffmpeg.exe
-  brushRelativePath: tools/brush/brush.exe
+  splatRendererPrefab: {fileID: 2624787479785350067, guid: de3f77b36a6270043923ce17af16717e, type: 3}
+  _cam: {fileID: 1515938687}
 --- !u!4 &402109666
 Transform:
   m_ObjectHideFlags: 0

@@ -1,0 +1,18 @@
+:root {
+}
+
+Foldout Toggle {
+    background-color: rgb(173, 173, 173);
+}
+
+#unity-text-field {
+    color: rgb(26, 26, 26);
+}
+
+PopupTextElement {
+    color: rgb(34, 34, 34);
+}
+
+#Foldout #unity-content {
+    align-items: center;
+}

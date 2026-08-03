@@ -63,8 +63,7 @@ namespace SplattingPipeline
         }
     }
 
-    // .NET's Process doesn't have a built-in cancellable WaitForExitAsync on all
-    // target frameworks — this extension covers Unity's typical .NET Standard 2.1 target.
+  
     public static class ProcessExtensions
     {
         public static Task WaitForExitAsync(this Process process, CancellationToken cancellationToken = default)

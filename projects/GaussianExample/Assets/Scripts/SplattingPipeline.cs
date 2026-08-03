@@ -16,6 +16,8 @@ namespace SplattingPipeline
         Error,
         Cancelled
     }
+    
+  
 
     /// <summary>
     /// Plain C# class (not a MonoBehaviour) — owns the actual pipeline logic.
@@ -35,6 +37,9 @@ namespace SplattingPipeline
         private readonly string _colmapExePath;
         private readonly string _ffmpegExePath;
         private readonly string _brushExePath;
+        
+        private InputType _inputType;
+        private PipelineSettings _settings;
 
         private CancellationTokenSource _cts;
         public PipelineStage CurrentStage { get; private set; } = PipelineStage.Idle;
@@ -50,8 +55,10 @@ namespace SplattingPipeline
 
         /// <param name="inputPath">A video file OR a folder of images.</param>
         /// <param name="workDir">Scratch directory for this job (frames, COLMAP db, sparse model, splat output).</param>
-        public async Task RunAsync(string inputPath, string workDir)
+        public async Task RunAsync(string inputPath, string workDir, InputType inputType, PipelineSettings settings)
         {
+            _settings =  settings;
+            _inputType = inputType;
             _cts = new CancellationTokenSource();
             Directory.CreateDirectory(workDir);
             var imagesDir = Path.Combine(workDir, "images");
@@ -104,8 +111,8 @@ namespace SplattingPipeline
             runner.OnOutputLine += line => OnLog?.Invoke(line);
             runner.OnErrorLine += line => OnLog?.Invoke(line); // ffmpeg logs progress to stderr
 
-            // 2 fps is a reasonable starting default; expose this later as a setting.
-            string args = $"-i \"{videoPath}\" -qscale:v 2 -vf fps=2 \"{Path.Combine(outDir, "frame_%05d.jpg")}\"";
+            
+            string args = $"-i \"{videoPath}\" -qscale:v 2 -vf fps={_settings.ExtractionFramerate} \"{Path.Combine(outDir, "frame_%05d.jpg")}\"";
             int exitCode = await runner.RunAsync(_ffmpegExePath, args, outDir, token);
 
             if (exitCode != 0)
@@ -134,8 +141,8 @@ namespace SplattingPipeline
             if (exitCode != 0)
                 throw new Exception($"COLMAP reconstruction failed (exit code {exitCode}). " +
                                      "Common causes: too few overlapping images, or all frames too blurry to match.");
-            
-            CopyImages(workDir, imagesDir);
+            if(_inputType == InputType.Images)
+                CopyImages(workDir, imagesDir);
         }
 
         private void CopyImages(string workDir, string imagesDir)
@@ -211,13 +218,14 @@ namespace SplattingPipeline
             // Brush expects the dataset root (containing both "images/" and "sparse/0/"),
             // not the sparse folder alone.
             // string args = $"train \"{workDir}\" --export-path \"{outputDir}\"";
-            string args = $"\"{workDir}\" --export-path \"{outputDir}\" --total-steps 1000 --max-resolution 512";
+            string args = $"\"{workDir}\" --export-path \"{outputDir}\" --total-steps {_settings.NumIterations} --max-resolution {_settings.MaxResolution}";
             int exitCode = await runner.RunAsync(_brushExePath, args, workDir, token);
 
             if (exitCode != 0)
                 throw new Exception($"Brush training failed (exit code {exitCode}).");
 
-            string plyPath = Path.Combine(outputDir, "export.ply");
+            // string plyPath = Path.Combine(outputDir, "export.ply");
+            string plyPath = Path.Combine(outputDir, $"export_{_settings.NumIterations}.ply");
             if (!File.Exists(plyPath))
                 throw new Exception("Brush finished but no export.ply was found — check its CLI output for the actual filename.");
 

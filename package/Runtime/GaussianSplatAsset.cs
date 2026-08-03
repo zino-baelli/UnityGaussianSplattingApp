@@ -26,6 +26,21 @@ namespace GaussianSplatting.Runtime
         public Vector3 boundsMin => m_BoundsMin;
         public Vector3 boundsMax => m_BoundsMax;
         public Hash128 dataHash => m_DataHash;
+        
+        byte[] m_PosDataBytes;
+        byte[] m_ColorDataBytes;
+        byte[] m_OtherDataBytes;
+        byte[] m_SHDataBytes;
+        byte[] m_ChunkDataBytes;
+        
+        public void SetAssetDataRuntime(byte[] dataChunk, byte[] dataPos, byte[] dataOther, byte[] dataColor, byte[] dataSh)
+        {
+            m_ChunkDataBytes = dataChunk;
+            m_PosDataBytes = dataPos;
+            m_OtherDataBytes = dataOther;
+            m_ColorDataBytes = dataColor;
+            m_SHDataBytes = dataSh;
+        }
 
         // Match VECTOR_FMT_* in HLSL
         public enum VectorFormat
@@ -221,11 +236,16 @@ namespace GaussianSplatting.Runtime
         public SHFormat shFormat => m_SHFormat;
         public ColorFormat colorFormat => m_ColorFormat;
 
-        public TextAsset posData => m_PosData;
-        public TextAsset colorData => m_ColorData;
-        public TextAsset otherData => m_OtherData;
-        public TextAsset shData => m_SHData;
-        public TextAsset chunkData => m_ChunkData;
+        // public TextAsset posData => m_PosData;
+        // public TextAsset colorData => m_ColorData;
+        // public TextAsset otherData => m_OtherData;
+        // public TextAsset shData => m_SHData;
+        // public TextAsset chunkData => m_ChunkData;
+        public GsDataRef posData => m_PosData != null ? new GsDataRef(m_PosData) : (m_PosDataBytes != null ? new GsDataRef(m_PosDataBytes) : null);
+        public GsDataRef colorData => m_ColorData != null ? new GsDataRef(m_ColorData) : (m_ColorDataBytes != null ? new GsDataRef(m_ColorDataBytes) : null);
+        public GsDataRef otherData => m_OtherData != null ? new GsDataRef(m_OtherData) : (m_OtherDataBytes != null ? new GsDataRef(m_OtherDataBytes) : null);
+        public GsDataRef shData => m_SHData != null ? new GsDataRef(m_SHData) : (m_SHDataBytes != null ? new GsDataRef(m_SHDataBytes) : null);
+        public GsDataRef chunkData => m_ChunkData != null ? new GsDataRef(m_ChunkData) : (m_ChunkDataBytes != null ? new GsDataRef(m_ChunkDataBytes) : null);
         public CameraInfo[] cameras => m_Cameras;
 
         public struct ChunkInfo
