@@ -53,7 +53,6 @@ namespace SplattingPipeline
             // Register cancellation: kill the OS process if the pipeline is cancelled.
             using var registration = cancellationToken.Register(() =>
             {
-                // try { if (!process.HasExited) process.Kill(entireProcessTree: true); }
                 try { if (!process.HasExited) ProcessTreeKiller.KillTree(process.Id); }
                 catch { /* already exited, ignore */ }
             });

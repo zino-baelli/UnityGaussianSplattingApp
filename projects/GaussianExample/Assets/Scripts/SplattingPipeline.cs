@@ -19,12 +19,7 @@ namespace SplattingPipeline
     
   
 
-    /// <summary>
-    /// Plain C# class (not a MonoBehaviour) — owns the actual pipeline logic.
-    /// A thin MonoBehaviour (PipelineUIController) drives this and reflects
-    /// its events into UI. Keeping this UI-agnostic makes it testable and
-    /// reusable outside Unity too.
-    /// </summary>
+   
     public class SplattingPipeline
     {
         // --- Events consumed by the UI layer ---
@@ -75,7 +70,7 @@ namespace SplattingPipeline
                 }
                 else
                 {
-                    // Folder of images — just point COLMAP at it directly.
+                    // Folder of images 
                     imagesDir = inputPath;
                 }
 
@@ -130,8 +125,7 @@ namespace SplattingPipeline
             runner.OnErrorLine += line => HandleColmapLine(line);
 
             // automatic_reconstructor bundles feature extraction, matching, and
-            // sparse mapping into a single call — simpler than driving each step
-            // yourself, at the cost of a little control over individual flags.
+            // sparse mapping into a single call 
             string args = $"automatic_reconstructor " +
                            $"--workspace_path \"{workDir}\" " +
                            $"--image_path \"{imagesDir}\" " +
@@ -175,29 +169,7 @@ namespace SplattingPipeline
         }
 
         private static readonly Regex BrushProgressRegex = new Regex(@"step[:\s]+(\d+)\s*/\s*(\d+)", RegexOptions.IgnoreCase);
-        //
-        // private async Task<string> RunBrushAsync(string workDir, CancellationToken token)
-        // {
-        //     string sparseDir = Path.Combine(workDir, "sparse", "0");
-        //     string outputDir = Path.Combine(workDir, "splat_output");
-        //     Directory.CreateDirectory(outputDir);
-        //
-        //     var runner = new ProcessRunner();
-        //     runner.OnOutputLine += line => HandleBrushLine(line);
-        //     runner.OnErrorLine += line => HandleBrushLine(line);
-        //
-        //     string args = $"train \"{sparseDir}\" --export-path \"{outputDir}\"";
-        //     int exitCode = await runner.RunAsync(_brushExePath, args, workDir, token);
-        //
-        //     if (exitCode != 0)
-        //         throw new Exception($"Brush training failed (exit code {exitCode}).");
-        //
-        //     string plyPath = Path.Combine(outputDir, "export.ply");
-        //     if (!File.Exists(plyPath))
-        //         throw new Exception("Brush finished but no export.ply was found — check its CLI output for the actual filename.");
-        //
-        //     return plyPath;
-        // }
+        
         private async Task<string> RunBrushAsync(string workDir, CancellationToken token)
         {
             string sparseDir = Path.Combine(workDir, "sparse", "0");

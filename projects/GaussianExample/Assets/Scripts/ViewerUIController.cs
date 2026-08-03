@@ -16,7 +16,6 @@ public class ViewerUIController : MonoBehaviour
     private Button _exportButton;
     private float _backgroundColor;
     
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
         var root = _document.rootVisualElement;
@@ -37,12 +36,7 @@ public class ViewerUIController : MonoBehaviour
             _cam.backgroundColor = new Color(_backgroundColor, _backgroundColor, _backgroundColor, 1);
         });
     }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    
 
     void NewButtonClicked()
     {

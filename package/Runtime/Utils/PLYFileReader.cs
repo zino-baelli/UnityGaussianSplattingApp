@@ -72,7 +72,6 @@ namespace GaussianSplatting.Editor.Utils
             vertices = new NativeArray<byte>(vertexCount * vertexStride, Allocator.Persistent);
             var readBytes = fs.Read(vertices);
             if (readBytes != vertices.Length)
-                vertices.Dispose();
                 throw new IOException($"PLY {filePath} read error, expected {vertices.Length} data bytes got {readBytes}");
         }
 

@@ -130,17 +130,7 @@ public class UIController : MonoBehaviour
    
     }
     
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-       
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    
 
     private void InputSelectionButtonClicked()
     {
@@ -291,12 +281,7 @@ public class UIController : MonoBehaviour
     }
     
     
-    // private void HandleFinished(string splatPath)
-    // {
-    //     _pipelineStage.text = $"Splat ready: {splatPath}";
-    //     // TODO: hand splatPath off to your UnityGaussianSplatting viewer here,
-    //     // e.g. GaussianSplatAssetImporter.Import(splatPath) or similar.
-    // }
+    
     private void HandleFinished(string splatPath)
     {
         _pipelineStage.text = $"Splat ready: {splatPath}";
@@ -342,9 +327,15 @@ public class UIController : MonoBehaviour
         var renderer = Instantiate(splatRendererPrefab);
         renderer.gameObject.name = $"Splat_{asset.name}";
         renderer.m_Asset = asset;
+        
+        var gizmos = FindObjectsByType<GizmoController>(FindObjectsInactive.Include, 
+            FindObjectsSortMode.None);
+        foreach (var gizmo in gizmos)
+        {
+            gizmo.target = renderer.transform;
+        }
     }
     
-    // SplatHandoff.cs — carries the imported asset across the scene load
     public static class SplatHandoff
     {
         public static GaussianSplatAsset PendingAsset;
@@ -370,11 +361,7 @@ public class UIController : MonoBehaviour
             _ => _pipelineStage.text
         };
 
-        if (stage is PipelineStage.Done or PipelineStage.Error or PipelineStage.Cancelled)
-        {
-            // startButton.interactable = true;
-            // cancelButton.interactable = false;
-        }
+        
     }
 }
 
