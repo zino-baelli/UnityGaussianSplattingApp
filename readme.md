@@ -11,5 +11,10 @@ This repo is missing prebuilt binaries. These need to be downloaded separately a
 - brush 0.3.0 windows msvc
     - [Github](https://github.com/ArthurBrussee/brush)
 
+## Requirements
+- Windows
+- Nvidia GPU
+- Cuda 11.8
+
 ## Authors
 Created by Zino Bälli.
