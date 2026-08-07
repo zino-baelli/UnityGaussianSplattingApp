@@ -15,13 +15,7 @@ public class GizmoScaler : MonoBehaviour
 
     void Start()
     {
-        int layer = LayerMask.NameToLayer("Gizmo");
-
-        // gizmoRoots = Object.FindObjectsByType<GameObject>(FindObjectsSortMode.None)
-        //     .Where(go => go.layer == layer)
-        //     .Where(go => go.transform.parent == null || go.transform.parent.gameObject.layer != layer)
-        //     .Select(go => go.transform)
-        //     .ToArray();
+     
         gizmoRoots = new []{translateGizmo.transform, rotateGizmo.transform};
 
         cameraPosition = _camera.transform.position;

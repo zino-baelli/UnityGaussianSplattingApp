@@ -4,11 +4,7 @@ namespace SplattingPipeline
 {
     public static class ProcessTreeKiller
     {
-        /// <summary>
-        /// Kills a process and all of its descendants using OS-native tools,
-        /// as a fallback for environments where Process.Kill(true) isn't
-        /// reliable (e.g. some Unity/Mono configurations).
-        /// </summary>
+     
         public static void KillTree(int pid)
         {
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN

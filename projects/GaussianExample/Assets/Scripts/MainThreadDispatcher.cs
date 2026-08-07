@@ -4,11 +4,7 @@ using UnityEngine;
 
 namespace SplattingPipeline
 {
-    /// <summary>
-    /// Drop this on one GameObject in your scene (or let it self-instantiate).
-    /// Anything called from ProcessRunner's events (background thread) that needs
-    /// to touch UI must go through Enqueue(), not be called directly.
-    /// </summary>
+
     public class MainThreadDispatcher : MonoBehaviour
     {
         private static MainThreadDispatcher _instance;

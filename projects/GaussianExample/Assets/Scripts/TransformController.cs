@@ -14,7 +14,6 @@ public class TransformController : MonoBehaviour
     private Color _highlightColor = Color.goldenRod;
     private Color _baseColor;
 
-    // private SelectionHandoff _selectedTransform;
     
     
 
@@ -44,11 +43,7 @@ public class TransformController : MonoBehaviour
         SelectionHandoff.SelectedTransform = TransformSelection.None;
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+
 
     private void RotateSelectorClicked()
     {

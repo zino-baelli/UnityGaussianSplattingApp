@@ -22,7 +22,6 @@ namespace SplattingPipeline
    
     public class SplattingPipeline
     {
-        // --- Events consumed by the UI layer ---
         public event Action<PipelineStage> OnStageChanged;
         public event Action<float> OnProgress;         // 0..1 within current stage
         public event Action<string> OnLog;              // raw lines, for a debug console
@@ -48,8 +47,7 @@ namespace SplattingPipeline
 
         public void Cancel() => _cts?.Cancel();
 
-        /// <param name="inputPath">A video file OR a folder of images.</param>
-        /// <param name="workDir">Scratch directory for this job (frames, COLMAP db, sparse model, splat output).</param>
+       
         public async Task RunAsync(string inputPath, string workDir, InputType inputType, PipelineSettings settings)
         {
             _settings =  settings;

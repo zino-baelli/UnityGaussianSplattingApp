@@ -5,12 +5,7 @@ using System.Threading.Tasks;
 
 namespace SplattingPipeline
 {
-    /// <summary>
-    /// Wraps a single external process (COLMAP, FFmpeg, Brush, ...) and exposes
-    /// its stdout/stderr as events plus an awaitable exit code.
-    /// Output events fire on a background thread — anything touching Unity UI
-    /// must be marshaled via MainThreadDispatcher.
-    /// </summary>
+   
     public class ProcessRunner
     {
         public event Action<string> OnOutputLine;   // stdout, line by line

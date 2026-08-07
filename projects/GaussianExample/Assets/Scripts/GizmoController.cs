@@ -14,8 +14,7 @@ public class GizmoController : MonoBehaviour
     public Material yMat;
     public Material activeMat;
 
-    // public float rotateSpeed = 200f;
-    // public float scaleSpeed = 1f;
+   
     public LayerMask gizmoLayerMask;
 
     private Transform selectedAxis;
@@ -113,7 +112,7 @@ public class GizmoController : MonoBehaviour
 
         if (SelectionHandoff.SelectedTransform == TransformController.TransformSelection.Rotate)
         {
-            // The ring lies on a plane whose normal IS the rotation axis.
+            // The ring lies on a plane whose normal is the rotation axis.
             dragPlane = new Plane(axisDir, target.position);
 
             // Build two perpendicular reference directions on that plane,
@@ -190,10 +189,7 @@ public class GizmoController : MonoBehaviour
         }
     }
     
-    /// <summary>
-    /// Projects a screen point onto the rotation plane and returns its angle
-    /// (in degrees) relative to the plane's reference axes.
-    /// </summary>
+   
     float GetAngleOnPlane(Vector3 screenPoint, Vector3 axisDir)
     {
         Ray ray = cam.ScreenPointToRay(screenPoint);
