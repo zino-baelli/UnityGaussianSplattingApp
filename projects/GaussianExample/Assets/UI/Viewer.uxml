@@ -2,6 +2,7 @@
     <Style src="project://database/Assets/UI/MenuStyle.uss?fileID=7433441132597879392&amp;guid=04cb96353bc14b5429d6f49984b47e43&amp;type=3#MenuStyle"/>
     <ui:VisualElement style="flex-grow: 1; align-content: flex-start; white-space: normal; align-items: stretch; flex-direction: row;">
         <ui:Foldout text="Menu&#10;" name="Foldout" value="false" style="align-self: flex-start; max-width: 30%; -unity-text-align: upper-left; justify-content: flex-start; align-items: flex-start; background-color: rgb(115, 115, 115); width: auto; padding-right: 0; padding-bottom: 0;">
+            <ui:SliderInt label="Camera Speed" value="1" high-value="20" name="CameraSpeed" low-value="1" show-input-field="false" style="width: 100%;"/>
             <ui:Slider label="Background" value="0" high-value="1" name="BackgroundSlider" style="min-width: 300px; margin-right: 20px; padding-bottom: 10px;"/>
             <ui:Button text="New Splat" name="NewButton" style="width: 120px; margin-bottom: 10px;"/>
             <ui:Button text="Export Splat" name="ExportButton" style="width: 120px; margin-bottom: 10px;"/>

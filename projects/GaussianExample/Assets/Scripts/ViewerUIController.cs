@@ -1,5 +1,6 @@
 using System.IO;
 using SFB;
+using SplattingPipeline;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
@@ -12,13 +13,16 @@ public class ViewerUIController : MonoBehaviour
     private Camera _cam;
     
     private Slider _backgroundSlider;
+    private SliderInt _cameraSpeedSlider;
     private Button _newButton;
     private Button _exportButton;
     private float _backgroundColor;
     
+    
     void Awake()
     {
         var root = _document.rootVisualElement;
+        
         
         _newButton = root.Q<Button>("NewButton");
         _newButton.clicked += NewButtonClicked;
@@ -34,6 +38,12 @@ public class ViewerUIController : MonoBehaviour
         {
             _backgroundColor = Mathf.Round(evt.newValue / 0.01f) * 0.01f;
             _cam.backgroundColor = new Color(_backgroundColor, _backgroundColor, _backgroundColor, 1);
+        });
+        
+        _cameraSpeedSlider = root.Q<SliderInt>("CameraSpeed");
+        _cameraSpeedSlider.RegisterCallback<ChangeEvent<int>>(evt =>
+        {
+            MultiplierHandoff.Multiplier = evt.newValue;
         });
     }
     

@@ -1,7 +1,7 @@
 ﻿namespace SplattingPipeline
 {
-    public class MultiplierHandoff
+    public static class MultiplierHandoff
     {
-        
+        public static int Multiplier = 1;
     }
 }

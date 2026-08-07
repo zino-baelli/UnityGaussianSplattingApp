@@ -1,3 +1,4 @@
+using SplattingPipeline;
 using UnityEngine;
 
 public class CameraZoom : MonoBehaviour
@@ -67,9 +68,9 @@ public class CameraZoom : MonoBehaviour
             float mouseX = Input.GetAxis("Mouse X");
             float mouseY = Input.GetAxis("Mouse Y");
 
-            yaw += mouseX * rotationSpeed * Time.deltaTime;
+            yaw += mouseX * (rotationSpeed * MultiplierHandoff.Multiplier) * Time.deltaTime;
 
-            float pitchDelta = mouseY * rotationSpeed * Time.deltaTime;
+            float pitchDelta = mouseY * (rotationSpeed * MultiplierHandoff.Multiplier) * Time.deltaTime;
             pitch += invertY ? pitchDelta : -pitchDelta;
             pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
         }

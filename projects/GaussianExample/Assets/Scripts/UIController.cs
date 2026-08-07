@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Windows.Forms.VisualStyles;
 using GaussianSplatting.Runtime;
 using SFB;
 using SplattingPipeline;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.TextCore.Text;
 using UnityEngine.UIElements;
 using Application = UnityEngine.Application;
 using Button = UnityEngine.UIElements.Button;
@@ -43,6 +45,7 @@ public class UIController : MonoBehaviour
     private Button _importButton;
     private Button _selectOutputButton;
     private Foldout _settingsFoldout;
+    private EnumField _presetDropdown;
     private DropdownField _resolutionDropdown;
     private SliderInt _iterationsSlider;
     private SliderInt _framerateSlider;
@@ -52,6 +55,11 @@ public class UIController : MonoBehaviour
     private PipelineSettings _pipelineSettings;
     [SerializeField]
     private Camera _cam;
+    
+    private enum PipelinePreset
+    {
+        None,Fast, Standard, High, UltraHigh
+    }
 
     void Awake()
     {
@@ -60,6 +68,9 @@ public class UIController : MonoBehaviour
         _cam.backgroundColor = Color.gray2;
         
         root = uiDoc.GetComponent<UIDocument>().rootVisualElement;
+        
+        // logConsole = root.Q<Label>("LogConsole");
+
         _selectButton = root.Q<Button>("InputSelection");
         _selectButton.clickable.clicked += InputSelectionButtonClicked;
         _selectOutputButton = root.Q<Button>("OutputSelection");
@@ -78,7 +89,51 @@ public class UIController : MonoBehaviour
         _pipelineStage.style.display = DisplayStyle.None;
         
         _settingsFoldout = root.Q<Foldout>("SettingsFoldout");
-        var choices = new List<string> {"512", "1024"};
+        
+        _presetDropdown = root.Q<EnumField>("PresetDropdown");
+        _presetDropdown.Init(PipelinePreset.None);
+        _presetDropdown.value = PipelinePreset.Standard; 
+        
+        _presetDropdown.RegisterCallback<ChangeEvent<Enum>>((evt) =>
+        {
+            switch (evt.newValue)
+            {
+                case PipelinePreset.None :
+                {
+                    _resolutionDropdown.SetEnabled(true);
+                    _iterationsSlider.SetEnabled(true);
+                }; break;
+                case PipelinePreset.Standard:
+                {
+                    _resolutionDropdown.SetEnabled(false);
+                    _iterationsSlider.SetEnabled(false);
+                    _pipelineSettings = new PipelineSettings(maxResolution: 1024, numIterations: 20000);
+                }; break;
+                case PipelinePreset.Fast : 
+                {
+                    _resolutionDropdown.SetEnabled(false);
+                    _iterationsSlider.SetEnabled(false);
+                    _pipelineSettings = new PipelineSettings(maxResolution: 512, numIterations: 3000);
+        
+                } ; break;
+                case PipelinePreset.High :  
+                {
+                    _resolutionDropdown.SetEnabled(false);
+                    _iterationsSlider.SetEnabled(false);
+                    _pipelineSettings = new PipelineSettings(maxResolution: 1280, numIterations: 30000);
+        
+                }; break;
+                case PipelinePreset.UltraHigh : 
+                {
+                    _resolutionDropdown.SetEnabled(false);
+                    _iterationsSlider.SetEnabled(false);
+                    _pipelineSettings = new PipelineSettings(maxResolution: 1920, numIterations: 50000);
+        
+                }; break;
+            }
+        });
+       
+        var choices = new List<string> {"512", "768", "1208", "1920", "2048"};
         _resolutionDropdown =  root.Q<DropdownField>("ResolutionDropdown");
         _resolutionDropdown.choices = choices;
         _resolutionDropdown.value = choices[0];
@@ -97,6 +152,10 @@ public class UIController : MonoBehaviour
         {
             _pipelineSettings.ExtractionFramerate = evt.newValue;
         });
+        
+        _resolutionDropdown.SetEnabled(false);
+        _iterationsSlider.SetEnabled(false);
+
         
         _progressBar = root.Q<ProgressBar>("StageProgressBar");
         _progressBar.lowValue = 0f;
@@ -177,6 +236,12 @@ public class UIController : MonoBehaviour
     private void SelectOutputButtonClicked()
     {
         string[] outputDirectory = StandaloneFileBrowser.OpenFolderPanel("Select Output Directory", "",false);
+        if (outputDirectory.Length <= 0)
+        {
+            _outputLabel.style.color = Color.red;
+            _outputLabel.text = "Please select a directory";
+            return;
+        }
         _selectedOutputPath = outputDirectory[0];
         _outputLabel.text = _selectedOutputPath;
     }
