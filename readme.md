@@ -1,5 +1,5 @@
 # Unity Gaussian Splatting Pipeline
-his project provides a pipeline for generating Gaussian Splats from videos or image sequences. 
+This project provides a pipeline for generating Gaussian Splats from videos or image sequences. 
 
 The project combines existing open-source tools into an automated pipeline that simplifies and streamlines the Gaussian Splat generation workflow. A Unity-based frontend provides an accessible interface for users to interact with the pipeline, manage the generation process, and work with the resulting Gaussian Splats.
 
